@@ -289,7 +289,6 @@ func (d *Daemon) AnnotateEndpoint(e *endpoint.Endpoint, annotationKey, annotatio
 	}
 }
 
-
 func createDockerClient(endpoint string) (*dClient.Client, error) {
 	defaultHeaders := map[string]string{"User-Agent": "cilium"}
 	return dClient.NewClient(endpoint, "v1.21", nil, defaultHeaders)
@@ -1133,10 +1132,10 @@ func (h *getConfig) Handle(params GetConfigParams) middleware.Responder {
 	d := h.daemon
 
 	cfg := &models.DaemonConfigurationResponse{
-		Addressing:    d.getNodeAddressing(),
-		Configuration: d.conf.Opts.GetModel(),
+		Addressing:       d.getNodeAddressing(),
+		Configuration:    d.conf.Opts.GetModel(),
 		K8sConfiguration: d.conf.K8sCfgPath,
-		K8sEndpoint: d.conf.K8sEndpoint,
+		K8sEndpoint:      d.conf.K8sEndpoint,
 	}
 
 	return NewGetConfigOK().WithPayload(cfg)

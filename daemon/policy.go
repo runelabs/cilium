@@ -179,8 +179,8 @@ func (h *getPolicyResolve) Handle(params GetPolicyResolveParams) middleware.Resp
 		// the API request, that means that policy enforcement is not enabled
 		// for the endpoints corresponding to said sets of labels; thus, we allow
 		// traffic between these sets of labels, and do not enforce policy between them.
-		if ! (d.policy.GetRulesMatching(labels.NewSelectLabelArrayFromModel(params.IdentityContext.From)) ||
-		d.policy.GetRulesMatching(labels.NewSelectLabelArrayFromModel(params.IdentityContext.To)) ) {
+		if !(d.policy.GetRulesMatching(labels.NewSelectLabelArrayFromModel(params.IdentityContext.From)) ||
+			d.policy.GetRulesMatching(labels.NewSelectLabelArrayFromModel(params.IdentityContext.To))) {
 			isPolicyEnforcementEnabled = false
 		}
 	} else if d.conf.EnablePolicy == endpoint.DefaultEnforcement && !d.conf.IsK8sEnabled() {
@@ -195,7 +195,7 @@ func (h *getPolicyResolve) Handle(params GetPolicyResolveParams) middleware.Resp
 
 	// Return allowed verdict if policy enforcement isn't enabled between the two sets of labels.
 	if !isPolicyEnforcementEnabled {
-		return NewGetPolicyResolveOK().WithPayload( &models.PolicyTraceResult {
+		return NewGetPolicyResolveOK().WithPayload(&models.PolicyTraceResult{
 			Verdict: api.Allowed.String(),
 		})
 	}

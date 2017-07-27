@@ -142,9 +142,9 @@ func (bo *BoolOptions) GetMutableModel() *models.ConfigurationMap {
 }
 
 func (bo *BoolOptions) GetModel() *models.Configuration {
-	cfg := models.Configuration {
+	cfg := models.Configuration{
 		Immutable: *bo.GetImmutableModel(),
-		Mutable: *bo.GetMutableModel(),
+		Mutable:   *bo.GetMutableModel(),
 	}
 
 	return &cfg

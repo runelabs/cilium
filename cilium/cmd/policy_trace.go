@@ -23,9 +23,10 @@ import (
 	"github.com/cilium/cilium/api/v1/models"
 
 	"github.com/cilium/cilium/pkg/endpoint"
-	"github.com/spf13/cobra"
 	"github.com/cilium/cilium/pkg/k8s"
+	"github.com/spf13/cobra"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"os"
 )
 
 const (
@@ -34,12 +35,12 @@ const (
 
 var src, dst, dports []string
 var srcIdentity, dstIdentity int64
-var srcEndpoint, dstEndpoint, srcK8sPod, dstK8sPod string
+var srcEndpoint, dstEndpoint, srcK8sPod, dstK8sPod, yamlFile string
 var verbose bool
 
 // policyTraceCmd represents the policy_trace command
 var policyTraceCmd = &cobra.Command{
-	Use:   "trace ( -s <label context> | --src-identity <security identity> | --src-endpoint <endpoint ID>) ( -d <label context> | --dst-identity <security identity> | --dst-endpoint <endpoint ID> ) [--dport <port>[/<protocol>]",
+	Use:   "trace ( -s <label context> | --src-identity <security identity> | --src-endpoint <endpoint ID> ) ( -d <label context> | --dst-identity <security identity> | --dst-endpoint <endpoint ID> ) [--dport <port>[/<protocol>] [--read-yaml <path to YAML file> ]",
 	Short: "Trace a policy decision",
 	Long: `Verifies if source ID or LABEL(s) is allowed to consume
 destination ID or LABEL(s). LABEL is represented as
@@ -115,7 +116,7 @@ dports can be can be for example: 80/tcp, 53 or 23/udp.`,
 			}
 			srcSecurityIDLabels, err := getLabelsFromIdentity(convertedId)
 			if err != nil {
-				Fatalf("%s",err)
+				Fatalf("%s", err)
 			}
 			srcSlice = append(srcSlice, srcSecurityIDLabels...)
 		}
@@ -131,9 +132,17 @@ dports can be can be for example: 80/tcp, 53 or 23/udp.`,
 			}
 			dstSecurityIDLabels, err := getLabelsFromIdentity(convertedId)
 			if err != nil {
-				Fatalf("%s",err)
+				Fatalf("%s", err)
 			}
 			dstSlice = append(dstSlice, dstSecurityIDLabels...)
+
+		}
+
+		if yamlFile != "" {
+			file, err := os.Open(yamlFile)
+			if err != nil {
+				Fatalf("%s", err)
+			}
 
 		}
 
@@ -166,6 +175,7 @@ func init() {
 	policyTraceCmd.Flags().StringVarP(&dstEndpoint, "dst-endpoint", "", "", "Destination endpoint")
 	policyTraceCmd.Flags().StringVarP(&srcK8sPod, "src-k8s-pod", "", "", "Source k8s pod ([namespace:]podname)")
 	policyTraceCmd.Flags().StringVarP(&dstK8sPod, "dst-k8s-pod", "", "", "Destination k8s pod ([namespace:]podname)")
+	policyTraceCmd.Flags().StringVarP(&yamlFile, "read-yaml", "", "", "YAML file to read from")
 }
 
 func appendEpLabelsToSlice(epId string, labelSlice []string) []string {
@@ -235,7 +245,7 @@ func getSecIdFromK8s(podName string) (string, error) {
 	if secId == "" {
 		return "", fmt.Errorf("cilium-identity annotation not set for pod %s in namespace %s", namespace, pod)
 	}
-	
+
 	return secId, nil
 }
 
