@@ -929,7 +929,7 @@ func init() {
         },
         "labels": {
           "description": "Labels describing the identity",
-          "$ref": "#/definitions/Labels"
+          "$ref": "#/definitions/LabelConfiguration"
         },
         "mac": {
           "description": "MAC address",
