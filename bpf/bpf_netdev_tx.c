@@ -75,7 +75,7 @@ static inline int __inline__ ipv6_revnat(struct __sk_buff *skb)
 	ipv6_addr_copy(&tuple.saddr, (union v6addr *) &ip6->saddr);
 	ipv6_addr_copy(&tuple.daddr, (union v6addr *) &ip6->daddr);
 
-	ret = ct_lookup6(&CT_MAP6, &tuple, skb, l4_off, CT_EGRESS, &ct_state);
+	ret = ct_lookup6(&CT_MAP6, &tuple, skb, l4_off, CT_INGRESS, &ct_state);
 	if (unlikely(ret == CT_REPLY && ct_state.rev_nat_index)) {
 		lb6_rev_nat(skb, l4_off, &csum_off,
 			    ct_state.rev_nat_index, &tuple, 0);
@@ -120,7 +120,7 @@ static inline int __inline__ ipv4_revnat(struct __sk_buff *skb)
 	tuple.daddr = ip4->daddr;
 	tuple.saddr = ip4->saddr;
 
-	ret = ct_lookup4(&CT_MAP4, &tuple, skb, l4_off, CT_EGRESS, &ct_state);
+	ret = ct_lookup4(&CT_MAP4, &tuple, skb, l4_off, CT_INGRESS, &ct_state);
 	if (unlikely(ret == CT_REPLY && ct_state.rev_nat_index)) {
 		lb4_rev_nat(skb, ETH_HLEN, l4_off, &csum_off, &ct_state, &tuple,
 			    REV_NAT_F_TUPLE_SADDR);
