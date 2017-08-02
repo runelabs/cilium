@@ -257,6 +257,8 @@ func (d *Daemon) DebugEnabled() bool {
 	return d.conf.Opts.IsEnabled(endpoint.OptionDebug)
 }
 
+// AnnotateEndpoint adds a Kubernetes annotation with key annotationKey and value
+// annotationValue if Kubernetes is being utilized in tandem with Cilium.
 func (d *Daemon) AnnotateEndpoint(e *endpoint.Endpoint, annotationKey, annotationValue string) {
 
 	if !d.conf.IsK8sEnabled() {
@@ -264,11 +266,18 @@ func (d *Daemon) AnnotateEndpoint(e *endpoint.Endpoint, annotationKey, annotatio
 	}
 	log.Debugf("k8s enabled, continuing")
 	split := strings.Split(e.PodName, ":")
+
+	if len(split) < 2 {
+		log.Errorf("improper formatting provided for k8s pod name: %s, should be delimited by %q", e.PodName, ":")
+		return
+	}
+
 	pod, err := d.k8sClient.CoreV1().Pods(split[0]).Get(split[1], meta_v1.GetOptions{})
 	if err != nil {
 		log.Errorf("error getting pod name for endpoint %d: %s", e.ID, err)
 		return
 	}
+
 	pod.Annotations[annotationKey] = annotationValue
 
 	log.Debugf("trying to add annotation")

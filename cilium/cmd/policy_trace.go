@@ -105,15 +105,15 @@ dports can be can be for example: 80/tcp, 53 or 23/udp.`,
 		}
 
 		if srcK8sPod != "" {
-			id, err := getSecIdFromK8s(srcK8sPod)
+			id, err := getSecIDFromK8s(srcK8sPod)
 			if err != nil {
 				Fatalf("Cannot get security id from k8s pod name: %s", err)
 			}
-			convertedId, err := strconv.ParseInt(id, 0, 64)
+			convertedID, err := strconv.ParseInt(id, 0, 64)
 			if err != nil {
 				Fatalf("Error converting security id %s to int64", id)
 			}
-			srcSecurityIDLabels, err := getLabelsFromIdentity(convertedId)
+			srcSecurityIDLabels, err := getLabelsFromIdentity(convertedID)
 			if err != nil {
 				Fatalf("%s", err)
 			}
@@ -121,15 +121,15 @@ dports can be can be for example: 80/tcp, 53 or 23/udp.`,
 		}
 
 		if dstK8sPod != "" {
-			id, err := getSecIdFromK8s(dstK8sPod)
+			id, err := getSecIDFromK8s(dstK8sPod)
 			if err != nil {
 				Fatalf("Cannot get security id from k8s pod name: %s", err)
 			}
-			convertedId, err := strconv.ParseInt(id, 0, 64)
+			convertedID, err := strconv.ParseInt(id, 0, 64)
 			if err != nil {
 				Fatalf("Error converting security id %s to int64", id)
 			}
-			dstSecurityIDLabels, err := getLabelsFromIdentity(convertedId)
+			dstSecurityIDLabels, err := getLabelsFromIdentity(convertedID)
 			if err != nil {
 				Fatalf("%s", err)
 			}
@@ -177,10 +177,10 @@ func init() {
 	policyTraceCmd.Flags().StringVarP(&yamlFile, "read-yaml", "", "", "YAML file to read from")
 }
 
-func appendEpLabelsToSlice(epId string, labelSlice []string) []string {
-	ep, err := client.EndpointGet(epId)
+func appendEpLabelsToSlice(epID string, labelSlice []string) []string {
+	ep, err := client.EndpointGet(epID)
 	if err != nil {
-		Fatalf("Cannot get endpoint corresponding to identifier %s: %s\n", epId, err)
+		Fatalf("Cannot get endpoint corresponding to identifier %s: %s\n", epID, err)
 	}
 	labelSlice = append(labelSlice, ep.Identity.Labels...)
 	return labelSlice
@@ -206,7 +206,7 @@ func parseLabels(slice []string) ([]string, error) {
 	return slice, nil
 }
 
-func getSecIdFromK8s(podName string) (string, error) {
+func getSecIDFromK8s(podName string) (string, error) {
 	fmtdPodName := endpoint.NewID(endpoint.PodNamePrefix, podName)
 	_, _, err := endpoint.ValidateID(fmtdPodName)
 	if err != nil {
@@ -240,12 +240,12 @@ func getSecIdFromK8s(podName string) (string, error) {
 		return "", fmt.Errorf("unable to get pod %s in namespace %s", namespace, pod)
 	}
 
-	secId := p.GetAnnotations()["cilium-identity"]
-	if secId == "" {
+	secID := p.GetAnnotations()["cilium-identity"]
+	if secID == "" {
 		return "", fmt.Errorf("cilium-identity annotation not set for pod %s in namespace %s", namespace, pod)
 	}
 
-	return secId, nil
+	return secID, nil
 }
 
 // parseL4PortsSlice parses a given `slice` of strings. Each string should be in
