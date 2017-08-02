@@ -26,7 +26,6 @@ import (
 	"github.com/cilium/cilium/pkg/k8s"
 	"github.com/spf13/cobra"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"os"
 )
 
 const (
@@ -138,13 +137,13 @@ dports can be can be for example: 80/tcp, 53 or 23/udp.`,
 
 		}
 
-		if yamlFile != "" {
+		/*(if yamlFile != "" {
 			file, err := os.Open(yamlFile)
 			if err != nil {
 				Fatalf("%s", err)
 			}
 
-		}
+		}*/
 
 		search := models.IdentityContext{
 			From:    srcSlice,
