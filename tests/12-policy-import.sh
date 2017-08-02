@@ -216,72 +216,19 @@ L3 verdict: allowed
 Verdict: allowed
 EOF
 
-# Ordering of labels in output is not guaranteed, so check if diff for ordering of To: labels is of either ordering.
-read -d '' EXPECTED_POLICY_2 <<"EOF" || true
-Tracing From: [container:id.foo, container:id.teamA] => To: [container:id.teamA, container:id.bar]
-* Rule 0 {"matchLabels":{"any:id.bar":""}}: match
-    Allows from labels {"matchLabels":{"any:id.foo":""}}
-+     Found all required labels
-* Rule 1 {"matchLabels":{"any:id.teamA":""}}: match
-    Requires from labels {"matchLabels":{"any:id.teamA":""}}
-+     Found all required labels
-2 rules matched
-Result: ALLOWED
-L3 verdict: allowed
-
-Verdict: allowed
-EOF
-
-read -d '' EXPECTED_POLICY_3 <<"EOF" || true
-Tracing From: [container:id.teamA, container:id.foo] => To: [container:id.teamA, container:id.bar]
-* Rule 0 {"matchLabels":{"any:id.bar":""}}: match
-    Allows from labels {"matchLabels":{"any:id.foo":""}}
-+     Found all required labels
-* Rule 1 {"matchLabels":{"any:id.teamA":""}}: match
-    Requires from labels {"matchLabels":{"any:id.teamA":""}}
-+     Found all required labels
-2 rules matched
-Result: ALLOWED
-L3 verdict: allowed
-
-Verdict: allowed
-EOF
-
-read -d '' EXPECTED_POLICY_4 <<"EOF" || true
-Tracing From: [container:id.teamA, container:id.foo] => To: [container:id.bar, container:id.teamA]
-* Rule 0 {"matchLabels":{"any:id.bar":""}}: match
-    Allows from labels {"matchLabels":{"any:id.foo":""}}
-+     Found all required labels
-* Rule 1 {"matchLabels":{"any:id.teamA":""}}: match
-    Requires from labels {"matchLabels":{"any:id.teamA":""}}
-+     Found all required labels
-2 rules matched
-Result: ALLOWED
-L3 verdict: allowed
-
-Verdict: allowed
-EOF
-
-
 
 echo "------ verify verbose trace for expected output using security identities ------"
 TRACE_OUTPUT=$(cilium policy trace --src-identity $FOO_SEC_ID --dst-identity $BAR_SEC_ID -v)
 DIFF=$(diff -Nru <(echo "$EXPECTED_POLICY") <(echo "$TRACE_OUTPUT")) || true
-DIFF2=$(diff -Nru <(echo "$EXPECTED_POLICY_2") <(echo "$TRACE_OUTPUT")) || true
-DIFF3=$(diff -Nru <(echo "$EXPECTED_POLICY_3") <(echo "$TRACE_OUTPUT")) || true
-DIFF4=$(diff -Nru <(echo "$EXPECTED_POLICY_4") <(echo "$TRACE_OUTPUT")) || true
-if [[ "$DIFF" != "" &&  "$DIFF2" != "" && "$DIFF3" != "" && "$DIFF4" != "" ]]; then
-    abort "DIFF: $DIFF, DIFF2: $DIFF2, DIFF3: $DIFF3, DIFF4: $DIFF4"
+if [[ "$DIFF" != "" ]]; then
+    abort "DIFF: $DIFF"
 fi
 
 echo "------ verify verbose trace for expected output using endpoint IDs ------"
 TRACE_OUTPUT=$(cilium policy trace --src-endpoint $FOO_ID --dst-endpoint $BAR_ID -v)
 DIFF=$(diff -Nru <(echo "$EXPECTED_POLICY") <(echo "$TRACE_OUTPUT")) || true
-DIFF2=$(diff -Nru <(echo "$EXPECTED_POLICY_2") <(echo "$TRACE_OUTPUT")) || true
-DIFF3=$(diff -Nru <(echo "$EXPECTED_POLICY_3") <(echo "$TRACE_OUTPUT")) || true
-DIFF4=$(diff -Nru <(echo "$EXPECTED_POLICY_4") <(echo "$TRACE_OUTPUT")) || true
-if [[ "$DIFF" != "" &&  "$DIFF2" != "" && "$DIFF3" != "" && "$DIFF4" != "" ]]; then
-    abort "DIFF: $DIFF, DIFF2: $DIFF2, DIFF3: $DIFF3, DIFF4: $DIFF4"
+if [[ "$DIFF" != "" ]]; then
+    abort "DIFF: $DIFF"
 fi
 
 EXPECTED_CONSUMER="$FOO_SEC_ID"
