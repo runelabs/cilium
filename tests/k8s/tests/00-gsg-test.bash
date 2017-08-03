@@ -33,7 +33,7 @@ function cleanup {
 
 function finish_test {
 	gather_files ${TEST_NAME} k8s-tests
-	gather_k8s_logs ${CILIUM_POD_1} ${CILIUM_POD_2} "1" ${LOGS_DIR}
+	gather_k8s_logs "1" ${LOGS_DIR}
 	cleanup
 }
 

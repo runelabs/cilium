@@ -31,14 +31,14 @@ function abort {
 }
 
 function gather_k8s_logs {
-  local CILIUM_POD_1=$1
-  local CILIUM_POD_2=$2
-  local LOCAL_NODE_NUM=$3
-  local LOGS_DIR=$4
+  local LOCAL_NODE_NUM=$1
+  local LOGS_DIR=$2
 
   mkdir -p ${LOGS_DIR}
-  kubectl logs -n kube-system ${CILIUM_POD_1} > ${LOGS_DIR}/${CILIUM_POD_1}-logs || true
-  kubectl logs -n kube-system ${CILIUM_POD_2} > ${LOGS_DIR}/${CILIUM_POD_2}-logs || true
+  local CILIUM_PODS=$(kubectl get pods -n ${NAMESPACE} -l k8s-app=cilium | tail -n +2 | awk '{print $1}')
+  for pod in $CILIUM_PODS; do 
+    kubectl logs -n ${NAMESPACE} ${pod} > ${LOGS_DIR}/${pod}-logs || true
+  done
   kubectl logs -n kube-system kube-apiserver-k8s-1 > ${LOGS_DIR}/kube-apiserver-k8s-1-logs || true
   kubectl logs -n kube-system kube-controller-manager-k8s-1 > ${LOGS_DIR}/kube-controller-manager-k8s-1-logs || true
   journalctl -au kubelet > ${LOGS_DIR}/kubelet-k8s-${LOCAL_NODE_NUM}-logs || true

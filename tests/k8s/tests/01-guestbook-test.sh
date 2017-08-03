@@ -21,10 +21,7 @@ LOGS_DIR="${dir}/cilium-files/${TEST_NAME}/logs"
 
 function finish_test {
   gather_files ${TEST_NAME} k8s-tests
-
-  CILIUM_POD_1=$(kubectl -n ${NAMESPACE} get pods -l k8s-app=cilium | awk 'NR==2{ print $1 }')
-  CILIUM_POD_2=$(kubectl -n ${NAMESPACE} get pods -l k8s-app=cilium | awk 'NR==3{ print $1 }')
-  gather_k8s_logs ${CILIUM_POD_1} ${CILIUM_POD_2} "2" ${LOGS_DIR}
+  gather_k8s_logs "2" ${LOGS_DIR}
 }
 
 trap finish_test exit
