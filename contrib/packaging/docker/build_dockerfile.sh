@@ -75,7 +75,6 @@ EOF
   cat <<EOF >> ./Dockerfile
 
 apt-get purge --auto-remove -y gcc make bison flex git curl xz-utils ca-certificates && \\
-# Needed for system minimal requirements checkers
 apt-get clean && \\
 rm -fr /root /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/local/go
 EOF

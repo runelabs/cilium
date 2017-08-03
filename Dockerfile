@@ -70,7 +70,6 @@ make PKG_BUILD=1 install && \
 groupadd -f cilium && \
 
 apt-get purge --auto-remove -y gcc make bison flex git curl xz-utils ca-certificates && \
-# Needed for system minimal requirements checkers
 apt-get clean && \
 rm -fr /root /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/local/go
 ADD plugins/cilium-cni/cni-install.sh /cni-install.sh
