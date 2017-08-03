@@ -37,7 +37,8 @@ function gather_k8s_logs {
   mkdir -p ${LOGS_DIR}
   local CILIUM_PODS=$(kubectl get pods -n ${NAMESPACE} -l k8s-app=cilium | tail -n +2 | awk '{print $1}')
   for pod in $CILIUM_PODS; do 
-    kubectl logs -n ${NAMESPACE} ${pod} > ${LOGS_DIR}/${pod}-logs || true
+    local NODE_NAME=$(kubectl get pod -n ${NAMESPACE} $pod  -o wide | tailn -n +2 | awk '{print $7}')
+    kubectl logs -n ${NAMESPACE} ${pod} > ${LOGS_DIR}/${pod}-${NODE_NAME}-logs || true
   done
   kubectl logs -n kube-system kube-apiserver-k8s-1 > ${LOGS_DIR}/kube-apiserver-k8s-1-logs || true
   kubectl logs -n kube-system kube-controller-manager-k8s-1 > ${LOGS_DIR}/kube-controller-manager-k8s-1-logs || true
