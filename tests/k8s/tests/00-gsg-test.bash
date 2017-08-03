@@ -95,7 +95,10 @@ echo "---- Policy in ${CILIUM_POD_2} ----"
 kubectl exec ${CILIUM_POD_2} -n ${NAMESPACE} -- cilium policy get
 
 echo "----- testing L3/L4 policy -----"
+APP1_POD="$(kubectl get pods -l id=app1 -o jsonpath='{.items[0].metadata.name}')"
 APP2_POD=$(kubectl get pods -l id=app2 -o jsonpath='{.items[0].metadata.name}')
+APP3_POD=$(kubectl get pods -l id=app3 -o jsonpath='{.items[0].metadata.name}')
+
 SVC_IP=$(kubectl get svc app1-service -o jsonpath='{.spec.clusterIP}' )
 
 echo "----- testing app2 can reach app1 (expected behavior: can reach) -----"
@@ -104,11 +107,50 @@ if [[ "${RETURN//$'\n'}" != "200" ]]; then
 	abort "Error: could not reach pod allowed by L3 L4 policy"
 fi
 
+echo "----- confirming that \`cilium policy trace\` shows that app2 can reach app1"
+read -d '' EXPECTED_POLICY <<"EOF" || true 
+Tracing From: [k8s:io.kubernetes.pod.namespace=default, k8s:id=app2] => To: [k8s:id=app1, k8s:io.kubernetes.pod.namespace=default]
+* Rule 0 {"matchLabels":{"k8s:id":"app1","k8s:io.kubernetes.pod.namespace":"default"}}: match
+    Allows from labels {"matchLabels":{"k8s:id":"app2","k8s:io.kubernetes.pod.namespace":"default"}}
++     Found all required labels
+  Rule 1 {"matchLabels":{"k8s:io.kubernetes.pod.namespace":"default","k8s:k8s-app.guestbook":"redis"}}: no match for [k8s:id=app1 k8s:io.kubernetes.pod.namespace=default]
+1 rules matched
+Result: ALLOWED
+L3 verdict: allowed
+
+Verdict: allowed
+EOF
+
+echo "------ verify trace for expected output ------"
+DIFF=$(diff -Nru <(echo "$EXPECTED_POLICY") <(kubectl exec $CILIUM_POD_1 --  cilium policy trace --src-k8s-pod default:$APP2_POD --dst-k8s-pod default:$APP1_POD -v)) || true
+if [[ "$DIFF" != "" ]]; then
+        abort "$DIFF"
+fi
+
 echo "----- testing that app3 cannot reach app 1 (expected behavior: cannot reach)"
-APP3_POD=$(kubectl get pods -l id=app3 -o jsonpath='{.items[0].metadata.name}')
 RETURN=$(kubectl exec $APP3_POD -- curl -s --output /dev/stderr -w '%{http_code}' --connect-timeout 10 -XGET $SVC_IP || true)
 if [[ "${RETURN//$'\n'}" != "000" ]]; then
 	abort "Error: unexpectedly reached pod allowed by L3 L4 Policy, received return code ${RETURN}"
+fi
+
+echo "----- confirming that \`cilium policy trace\` shows that app3 cannot reach app1"
+read -d '' EXPECTED_POLICY <<"EOF" || true
+Tracing From: [k8s:id=app3, k8s:io.kubernetes.pod.namespace=default] => To: [k8s:id=app1, k8s:io.kubernetes.pod.namespace=default]
+* Rule 0 {"matchLabels":{"k8s:id":"app1","k8s:io.kubernetes.pod.namespace":"default"}}: match
+    Allows from labels {"matchLabels":{"k8s:id":"app2","k8s:io.kubernetes.pod.namespace":"default"}}
+      Labels [k8s:id=app3 k8s:io.kubernetes.pod.namespace=default] not found
+  Rule 1 {"matchLabels":{"k8s:io.kubernetes.pod.namespace":"default","k8s:k8s-app.guestbook":"redis"}}: no match for [k8s:id=app1 k8s:io.kubernetes.pod.namespace=default]
+1 rules matched
+Result: DENIED
+L3 verdict: denied
+
+Verdict: denied
+EOF
+
+echo "------ verify trace for expected output ------"
+DIFF=$(diff -Nru <(echo "$EXPECTED_POLICY") <(kubectl exec $CILIUM_POD_1 --  cilium policy trace --src-k8s-pod default:$APP3_POD --dst-k8s-pod default:$APP1_POD -v)) || true
+if [[ "$DIFF" != "" ]]; then
+        abort "$DIFF"
 fi
 
 echo "------ performing HTTP GET on ${SVC_IP}/public from service2 ------"
