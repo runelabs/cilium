@@ -1,8 +1,9 @@
 #!/bin/bash
+# Note: This script should only be ran at path contrib/packaging/docker
 
 function build_dockerfile_dev {
    cat <<EOF > ./Dockerfile
-FROM cilium/dependencies:latest
+FROM cilium/dependencies:`cat ../../../VERSION`
 LABEL "Maintainer: Andre Martins <andre@cilium.io>"
 
 ADD . /tmp/cilium-net-build/src/github.com/cilium/cilium
