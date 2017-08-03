@@ -122,7 +122,7 @@ Verdict: allowed
 EOF
 
 echo "------ verify trace for expected output ------"
-DIFF=$(diff -Nru <(echo "$EXPECTED_POLICY") <(kubectl exec $CILIUM_POD_1 --  cilium policy trace --src-k8s-pod default:$APP2_POD --dst-k8s-pod default:$APP1_POD -v)) || true
+DIFF=$(diff -Nru <(echo "$EXPECTED_POLICY") <(kubectl exec -n kube-system $CILIUM_POD_1 --  cilium policy trace --src-k8s-pod default:$APP2_POD --dst-k8s-pod default:$APP1_POD -v)) || true
 if [[ "$DIFF" != "" ]]; then
         abort "$DIFF"
 fi
@@ -148,7 +148,7 @@ Verdict: denied
 EOF
 
 echo "------ verify trace for expected output ------"
-DIFF=$(diff -Nru <(echo "$EXPECTED_POLICY") <(kubectl exec $CILIUM_POD_1 --  cilium policy trace --src-k8s-pod default:$APP3_POD --dst-k8s-pod default:$APP1_POD -v)) || true
+DIFF=$(diff -Nru <(echo "$EXPECTED_POLICY") <(kubectl exec -n kube-system $CILIUM_POD_1 --  cilium policy trace --src-k8s-pod default:$APP3_POD --dst-k8s-pod default:$APP1_POD -v)) || true
 if [[ "$DIFF" != "" ]]; then
         abort "$DIFF"
 fi
