@@ -1,7 +1,7 @@
 #!/bin/bash 
 DEV_DOCKERFILE="$PWD/../Dockerfile.dev"
 PROD_DOCKERFILE="$PWD/../Dockerfile"
-DEP_DOCKERFILE="$PWD//../Dockerfile.deps"
+DEP_DOCKERFILE="$PWD/../Dockerfile.deps"
 DOCKERFILE_SCRIPT="$PWD/../contrib/packaging/docker/build_dockerfile.sh"
 
 function cleanup {
@@ -34,9 +34,9 @@ function error_if_files_diff {
 trap cleanup EXIT
 
 # Generate each separate Dockerfile.
-${DOCKERFILE_SCRIPT} build_dockerfile_dev && mv Dockerfile Dockerfile.dev.tmpgen
-${DOCKERFILE_SCRIPT} build_dockerfile_prod && mv Dockerfile Dockerfile.prod.tmpgen
-${DOCKERFILE_SCRIPT} build_dockerfile_dependencies && mv Dockerfile Dockerfile.deps.tmpgen
+${DOCKERFILE_SCRIPT} build_dockerfile_dev && mv ${PWD}/../contrib/packaging/docker/Dockerfile Dockerfile.dev.tmpgen
+${DOCKERFILE_SCRIPT} build_dockerfile_prod && mv ${PWD}/../contrib/packaging/docker/Dockerfile Dockerfile.prod.tmpgen
+${DOCKERFILE_SCRIPT} build_dockerfile_dependencies && mv ${PWD}/../contrib/packaging/docker/Dockerfile Dockerfile.deps.tmpgen
 
 # Check if the generated Dockerfiles differ from those that are already in the repo.
 error_if_files_diff ${DEV_DOCKERFILE} ./Dockerfile.dev.tmpgen

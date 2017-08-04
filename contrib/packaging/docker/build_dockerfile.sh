@@ -1,5 +1,7 @@
 #!/bin/bash
-# Note: This script should only be ran at path contrib/packaging/docker
+
+dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+cd "${dir}"
 
 function build_dockerfile_dev {
    cat <<EOF > ./Dockerfile
